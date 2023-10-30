@@ -29,6 +29,6 @@ Actions:
       RepositoryName: dev
       AWSRegion: us-west-2
       DockerfileLocation: ubuntu/standard/7.0
-      ImageTag: aws/codebuild/standard:7.0
+      ImageTag: codebuild7
       PublicRepository: false
       ImageScanningConfiguration: false
