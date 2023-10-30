@@ -9,41 +9,26 @@ Triggers:
 
 # Required - Define action configurations.
 Actions:
-  Build_72:
+  PushToAmazonECR_53:
     # Identifies the action. Do not modify this value.
-    Identifier: aws/build@v1.0.0
-    # Specifies the source and/or artifacts to pass to the action as input.
-    Inputs:
-      # Optional
-      Sources:
-        - WorkflowSource # This specifies that the action requires this Workflow as a source
-      Variables:
-        - Name: AWS_DEFAULT_REGION
-          Value: us-west-2
-        - Name: IMAGE_REPO_NAME
-          Value: dev
-        - Name: IMAGE_TAG
-          Value: aws/codebuild/standard:7.0
-    Outputs:
-      # Optional; Automatically discover reports for popular test frameworks
-      AutoDiscoverReports:
-        Enabled: true
-        # Use as prefix for the report files
-        ReportNamePrefix: rpt
-    # Defines the action's properties.
-    Configuration:
-      # Required - Steps are sequential instructions that run shell commands
-      Steps:
-        - Run: AWS_ACCOUNT_ID=`aws sts get-caller-identity --quer "Account" --output text`
-        - Run: git clone https://github.com/aws/aws-codebuild-docker-images.git
-        - Run: cd ./aws-codebuild-docker-images/ubuntu/standard/7.0
-        - Run: docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG .
-        - Run: aws ecr get-login-password | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-        - Run: docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
-    Compute:
-      Type: EC2
+    Identifier: codecatalyst-labs/push-to-ecr@v1.0.3
+    # Required; You can use an environment, AWS account connection, and role to access AWS resources.
     Environment:
       Connections:
         - Role: CodeCatalystPreviewDevelopmentAdministrator-81rry4
           Name: "099205268635"
       Name: VAMS_Deployments_Env
+    # Specifies the source and/or artifacts to pass to the action as input.
+    Inputs:
+      # Optional
+      Sources:
+        - WorkflowSource # This specifies that the action requires this Workflow as a source
+    Compute:
+      Type: EC2 # Defines the action's properties.
+    Configuration:
+      RepositoryName: dev
+      AWSRegion: us-west-2
+      DockerfileLocation: ubuntu/standard/7.0
+      ImageTag: aws/codebuild/standard:7.0
+      PublicRepository: false
+      ImageScanningConfiguration: false
