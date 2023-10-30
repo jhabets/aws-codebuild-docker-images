@@ -17,6 +17,13 @@ Actions:
       # Optional
       Sources:
         - WorkflowSource # This specifies that the action requires this Workflow as a source
+      Variables:
+        - Name: AWS_DEFAULT_REGION
+          Value: us-west-2
+        - Name: IMAGE_REPO_NAME
+          Value: hello-world
+        - Name: IMAGE_TAG
+          Value: aws/codebuild/standard:7.0
     Outputs:
       # Optional; Automatically discover reports for popular test frameworks
       AutoDiscoverReports:
@@ -27,11 +34,12 @@ Actions:
     Configuration:
       # Required - Steps are sequential instructions that run shell commands
       Steps:
-        - Run: echo "Hello, World!"
-        - Run: echo "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" >> report.xml
-        - Run: echo "<testsuite tests=\"1\" name=\"TestAgentJunit\" >" >> report.xml
-        - Run: echo "<testcase classname=\"TestAgentJunit\" name=\"Dummy
-            Test\"/></testsuite>" >> report.xml
+        - Run: AWS_ACCOUNT_ID=`aws sts get-caller-identity --quer "Account" --output text`
+        - Run: git pull https://github.com/aws/aws-codebuild-docker-images.git
+        - Run: cd aws-codebuild-ocker-images/ubuntu/standard/7.0
+        - Run: docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG .
+        - Run: aws ecr get-login-password | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+        - Run: docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
     Compute:
       Type: EC2
     Environment:
